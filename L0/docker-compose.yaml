@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+  app:
+    build: go_container
+    restart: on-failure
+    container_name: my_golang
+    ports:
+      - "8080:8080"
+    networks:
+      my_network:
+        ipv4_address: 192.168.0.4
+    depends_on:
+      - database
+      - broker
+  database:
+    build: db_container
+    restart: on-failure
+    container_name: my_db
+    environment:
+      - POSTGRES_DB=level0
+      - POSTGRES_USER=valera
+      - POSTGRES_PASSWORD=123
+    ports:
+      - "5432:5432"
+    networks:
+      my_network:
+        ipv4_address: 192.168.0.3
+  broker:
+    container_name: my_nats
+    restart: on-failure
+    image: nats-streaming:latest
+    ports:
+      - "4222:4222"
+    networks:
+      my_network:
+        ipv4_address: 192.168.0.2
+
+networks:
+  my_network:
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.0.0/24
